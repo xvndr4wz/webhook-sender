@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Webhook Embed Sender</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #5865F2 0%, #7289DA 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 0.95rem;
+        }
+
+        .optional {
+            color: #888;
+            font-weight: 400;
+            font-size: 0.85rem;
+        }
+
+        input[type="text"],
+        input[type="url"],
+        textarea,
+        input[type="color"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        input[type="url"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #5865F2;
+            box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .color-input-wrapper {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        input[type="color"] {
+            width: 80px;
+            height: 50px;
+            cursor: pointer;
+            border: none;
+            padding: 5px;
+        }
+
+        .color-input-wrapper input[type="text"] {
+            flex: 1;
+        }
+
+        .validation-status {
+            margin-top: 10px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: none;
+        }
+
+        .validation-status.valid {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .validation-status.invalid {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .fields-container {
+            border: 2px dashed #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 10px;
+        }
+
+        .field-item {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .field-item h4 {
+            margin-bottom: 15px;
+            color: #5865F2;
+            font-size: 0.95rem;
+        }
+
+        .field-row {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .inline-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .inline-checkbox input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .remove-field-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .remove-field-btn:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #5865F2;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #4752C4;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(88, 101, 242, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+            width: 100%;
+            padding: 15px;
+            font-size: 1.05rem;
+            margin-top: 10px;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-label {
+            display: block;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border: 2px dashed #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            color: #666;
+        }
+
+        .file-label:hover {
+            background: #e9ecef;
+            border-color: #5865F2;
+            color: #5865F2;
+        }
+
+        .file-preview {
+            margin-top: 10px;
+            display: none;
+        }
+
+        .file-preview img {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .file-preview.active {
+            display: block;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .field-row {
+                grid-template-columns: 1fr;
+            }
+
+            .color-input-wrapper {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            input[type="color"] {
+                width: 100%;
+            }
+        }
+
+        .status-message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Discord Webhook Embed Sender</h1>
+            <p>Kirim embed kustom ke Discord webhook Anda dengan mudah</p>
+        </div>
+
+        <div class="content">
+            <form id="webhookForm">
+                <!-- Webhook URL -->
+                <div class="form-group">
+                    <label>Webhook URL *</label>
+                    <input type="url" id="webhookUrl" placeholder="https://discord.com/api/webhooks/..." required>
+                    <div id="validationStatus" class="validation-status"></div>
+                </div>
+
+                <!-- Bot Name -->
+                <div class="form-group">
+                    <label>Nama Bot Webhook <span class="optional">(Opsional)</span></label>
+                    <input type="text" id="botName" placeholder="Masukkan nama bot...">
+                </div>
+
+                <!-- Embed Title -->
+                <div class="form-group">
+                    <label>Judul Embed *</label>
+                    <input type="text" id="embedTitle" placeholder="Masukkan judul embed..." required>
+                </div>
+
+                <!-- Embed Description -->
+                <div class="form-group">
+                    <label>Deskripsi Embed *</label>
+                    <textarea id="embedDescription" placeholder="Masukkan deskripsi embed..." required></textarea>
+                </div>
+
+                <!-- Embed Color -->
+                <div class="form-group">
+                    <label>Warna Embed</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" id="embedColor" value="#5865F2">
+                        <input type="text" id="embedColorHex" value="#5865F2" placeholder="#5865F2">
+                    </div>
+                </div>
+
+                <!-- Fields -->
+                <div class="form-group">
+                    <label>Fields Embed</label>
+                    <div class="fields-container" id="fieldsContainer">
+                        <p style="color: #888; text-align: center;">Belum ada field. Klik tombol di bawah untuk menambahkan field.</p>
+                    </div>
+                    <button type="button" class="btn btn-secondary" id="addFieldBtn" style="margin-top: 15px;">
+                        ➕ Tambah Field
+                    </button>
+                </div>
+
+                <!-- Thumbnail (Small) -->
+                <div class="form-group">
+                    <label>Thumbnail Kecil <span class="optional">(Opsional)</span></label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="thumbnailSmall" accept="image/*">
+                        <label for="thumbnailSmall" class="file-label">
+                            📷 Pilih gambar untuk thumbnail kecil
+                        </label>
+                    </div>
+                    <div class="file-preview" id="thumbnailSmallPreview"></div>
+                </div>
+
+                <!-- Image (Large) -->
+                <div class="form-group">
+                    <label>Gambar Besar <span class="optional">(Opsional)</span></label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="imageLarge" accept="image/*">
+                        <label for="imageLarge" class="file-label">
+                            🖼️ Pilih gambar untuk thumbnail besar
+                        </label>
+                    </div>
+                    <div class="file-preview" id="imageLargePreview"></div>
+                </div>
+
+                <!-- Footer -->
+                <div class="form-group">
+                    <label>Footer Text <span class="optional">(Opsional)</span></label>
+                    <input type="text" id="footerText" placeholder="Masukkan teks footer...">
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-success">
+                    📤 Kirim Embed ke Discord
+                </button>
+
+                <div id="statusMessage" class="status-message"></div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let fieldCount = 0;
+
+        // Webhook URL validation
+        document.getElementById('webhookUrl').addEventListener('input', async function() {
+            const url = this.value;
+            const statusDiv = document.getElementById('validationStatus');
+
+            if (!url) {
+                statusDiv.style.display = 'none';
+                return;
+            }
+
+            // Check if URL format is valid
+            const webhookRegex = /^https:\/\/discord\.com\/api\/webhooks\/\d+\/[\w-]+$/;
+            
+            if (!webhookRegex.test(url)) {
+                statusDiv.className = 'validation-status invalid';
+                statusDiv.textContent = '❌ Format URL webhook tidak valid';
+                return;
+            }
+
+            // Test webhook
+            try {
+                const response = await fetch(url);
+                if (response.ok) {
+                    statusDiv.className = 'validation-status valid';
+                    statusDiv.textContent = '✅ Webhook valid dan aktif';
+                } else {
+                    statusDiv.className = 'validation-status invalid';
+                    statusDiv.textContent = '❌ Webhook tidak ditemukan atau tidak aktif';
+                }
+            } catch (error) {
+                statusDiv.className = 'validation-status invalid';
+                statusDiv.textContent = '❌ Gagal memvalidasi webhook';
+            }
+        });
+
+        // Color sync
+        document.getElementById('embedColor').addEventListener('input', function() {
+            document.getElementById('embedColorHex').value = this.value.toUpperCase();
+        });
+
+        document.getElementById('embedColorHex').addEventListener('input', function() {
+            let value = this.value;
+            if (!value.startsWith('#')) {
+                value = '#' + value;
+            }
+            if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
+                document.getElementById('embedColor').value = value;
+            }
+        });
+
+        // Add field
+        document.getElementById('addFieldBtn').addEventListener('click', function() {
+            fieldCount++;
+            const fieldsContainer = document.getElementById('fieldsContainer');
+            
+            // Remove empty message
+            if (fieldCount === 1) {
+                fieldsContainer.innerHTML = '';
+            }
+
+            const fieldHtml = `
+                <div class="field-item" data-field-id="${fieldCount}">
+                    <h4>Field #${fieldCount}</h4>
+                    <div class="field-row">
+                        <div>
+                            <label style="font-size: 0.85rem;">Nama Field *</label>
+                            <input type="text" class="field-name" placeholder="Nama..." required>
+                        </div>
+                        <div>
+                            <label style="font-size: 0.85rem;">Teks Field *</label>
+                            <input type="text" class="field-value" placeholder="Teks..." required>
+                        </div>
+                    </div>
+                    <div class="inline-checkbox">
+                        <input type="checkbox" class="field-inline" id="inline${fieldCount}">
+                        <label for="inline${fieldCount}" style="margin: 0; font-weight: 400;">Inline (tampil berdampingan)</label>
+                    </div>
+                    <button type="button" class="remove-field-btn" onclick="removeField(${fieldCount})">
+                        🗑️ Hapus Field
+                    </button>
+                </div>
+            `;
+
+            fieldsContainer.insertAdjacentHTML('beforeend', fieldHtml);
+        });
+
+        // Remove field
+        function removeField(id) {
+            const field = document.querySelector(`[data-field-id="${id}"]`);
+            field.remove();
+
+            const remainingFields = document.querySelectorAll('.field-item');
+            if (remainingFields.length === 0) {
+                document.getElementById('fieldsContainer').innerHTML = 
+                    '<p style="color: #888; text-align: center;">Belum ada field. Klik tombol di bawah untuk menambahkan field.</p>';
+                fieldCount = 0;
+            }
+        }
+
+        // File preview
+        function setupFilePreview(inputId, previewId) {
+            document.getElementById(inputId).addEventListener('change', function(e) {
+                const preview = document.getElementById(previewId);
+                const file = e.target.files[0];
+
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                        preview.classList.add('active');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    preview.innerHTML = '';
+                    preview.classList.remove('active');
+                }
+            });
+        }
+
+        setupFilePreview('thumbnailSmall', 'thumbnailSmallPreview');
+        setupFilePreview('imageLarge', 'imageLargePreview');
+
+        // Form submission
+        document.getElementById('webhookForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const statusMessage = document.getElementById('statusMessage');
+            statusMessage.style.display = 'none';
+
+            // Get form data
+            const webhookUrl = document.getElementById('webhookUrl').value;
+            const botName = document.getElementById('botName').value;
+            const embedTitle = document.getElementById('embedTitle').value;
+            const embedDescription = document.getElementById('embedDescription').value;
+            const embedColor = document.getElementById('embedColor').value;
+            const footerText = document.getElementById('footerText').value;
+
+            // Convert hex color to decimal
+            const colorDecimal = parseInt(embedColor.replace('#', ''), 16);
+
+            // Build embed object
+            const embed = {
+                title: embedTitle,
+                description: embedDescription,
+                color: colorDecimal,
+                fields: []
+            };
+
+            // Add fields
+            const fieldItems = document.querySelectorAll('.field-item');
+            fieldItems.forEach(item => {
+                const name = item.querySelector('.field-name').value;
+                const value = item.querySelector('.field-value').value;
+                const inline = item.querySelector('.field-inline').checked;
+
+                if (name && value) {
+                    embed.fields.push({ name, value, inline });
+                }
+            });
+
+            // Add thumbnail
+            const thumbnailFile = document.getElementById('thumbnailSmall').files[0];
+            if (thumbnailFile) {
+                const thumbnailData = await fileToBase64(thumbnailFile);
+                embed.thumbnail = { url: thumbnailData };
+            }
+
+            // Add image
+            const imageFile = document.getElementById('imageLarge').files[0];
+            if (imageFile) {
+                const imageData = await fileToBase64(imageFile);
+                embed.image = { url: imageData };
+            }
+
+            // Add footer
+            if (footerText) {
+                embed.footer = { text: footerText };
+            }
+
+            // Build payload
+            const payload = {
+                embeds: [embed]
+            };
+
+            if (botName) {
+                payload.username = botName;
+            }
+
+            // Send to webhook
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok || response.status === 204) {
+                    statusMessage.className = 'status-message success';
+                    statusMessage.textContent = '✅ Embed berhasil dikirim ke Discord!';
+                } else {
+                    throw new Error('Gagal mengirim embed');
+                }
+            } catch (error) {
+                statusMessage.className = 'status-message error';
+                statusMessage.textContent = '❌ Gagal mengirim embed. Periksa URL webhook Anda.';
+            }
+        });
+
+        // Helper function to convert file to base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+    </script>
+</body>
+</html>
