@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Webhook · professional embed</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0c0c0f;
+            background-image: radial-gradient(circle at 30% 30%, rgba(79, 114, 202, 0.1) 0%, transparent 30%),
+                              radial-gradient(circle at 80% 70%, rgba(114, 137, 218, 0.08) 0%, transparent 35%);
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            color: #ebebf0;
+        }
+
+        /* modern glass card */
+        .glass-card {
+            max-width: 1100px;
+            width: 100%;
+            background: rgba(18, 20, 27, 0.9);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(66, 72, 103, 0.4);
+            border-radius: 36px;
+            box-shadow: 0 30px 60px -10px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        /* header with depth */
+        .hero {
+            padding: 2.5rem 2.5rem 2rem 2.5rem;
+            background: linear-gradient(145deg, #1a1d2b, #11131f);
+            border-bottom: 1px solid #2f3342;
+            position: relative;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 70% 20%, rgba(88, 101, 242, 0.18), transparent 60%);
+            pointer-events: none;
+        }
+        .hero h1 {
+            font-size: 2.3rem;
+            font-weight: 650;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #ffffff, #c7d2fe);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .hero h1 span {
+            font-size: 2rem;
+        }
+        .hero p {
+            color: #9fa3b8;
+            font-size: 1.05rem;
+            font-weight: 400;
+        }
+
+        .content {
+            padding: 2.2rem 2.5rem 2.8rem 2.5rem;
+        }
+
+        /* modern label & inputs */
+        .field {
+            margin-bottom: 1.8rem;
+        }
+        .field-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 530;
+            font-size: 0.95rem;
+            letter-spacing: 0.01em;
+            color: #cfd2e3;
+            margin-bottom: 0.5rem;
+        }
+        .field-label .badge {
+            background: #2c3142;
+            color: #a9b0d1;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.2rem 0.7rem;
+            border-radius: 30px;
+            border: 1px solid #40465f;
+        }
+
+        input, textarea {
+            width: 100%;
+            background: #151821;
+            border: 1.5px solid #2b3040;
+            border-radius: 18px;
+            padding: 0.9rem 1.2rem;
+            font-size: 0.95rem;
+            color: #f0f2fa;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        input:hover, textarea:hover {
+            border-color: #434b6b;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #5f6aea;
+            box-shadow: 0 0 0 4px rgba(99, 115, 255, 0.15);
+            background: #1a1e2c;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 110px;
+        }
+        ::placeholder {
+            color: #5a6077;
+            font-weight: 400;
+        }
+
+        /* custom color picker */
+        .color-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .custom-color-picker {
+            display: flex;
+            align-items: center;
+            background: #151821;
+            border: 1.5px solid #2b3040;
+            border-radius: 50px;
+            padding: 0.15rem 0.15rem 0.15rem 0.8rem;
+            width: fit-content;
+        }
+        .color-preview {
+            width: 42px;
+            height: 42px;
+            border-radius: 40px;
+            border: 2px solid #2d3348;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+        .color-preview:hover {
+            transform: scale(1.06);
+            border-color: #8b98ff;
+        }
+        .color-hex-input {
+            background: transparent !important;
+            border: none !important;
+            width: 120px;
+            padding: 0.2rem 0.8rem;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #d6daf2;
+            box-shadow: none !important;
+        }
+        .color-hex-input:focus {
+            background: #202433 !important;
+            border-radius: 40px;
+        }
+        /* hidden native color */
+        #embedColorNative {
+            opacity: 0;
+            position: absolute;
+            width: 0;
+            height: 0;
+            pointer-events: none;
+        }
+
+        /* URL / file toggles */
+        .media-option {
+            background: #151821;
+            border-radius: 20px;
+            padding: 1rem 1.3rem;
+            margin-top: 0.6rem;
+            border: 1px solid #2d3245;
+        }
+        .media-option-header {
+            display: flex;
+            gap: 25px;
+            margin-bottom: 1rem;
+        }
+        .media-option-header label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #bac0da;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .media-option-header input[type="radio"] {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #495172;
+            border-radius: 50%;
+            margin: 0;
+            padding: 0;
+            background: #1b1f30;
+            transition: 0.1s;
+        }
+        .media-option-header input[type="radio"]:checked {
+            border: 5px solid #6b7cff;
+            background: #1e2338;
+        }
+        .media-url-input {
+            display: block;
+        }
+        .file-zone {
+            display: none;
+        }
+        .file-zone.active {
+            display: block;
+        }
+        .url-zone.active {
+            display: block;
+        }
+        .file-drop {
+            background: #121624;
+            border: 2px dashed #353d58;
+            border-radius: 22px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .file-drop:hover {
+            border-color: #6f7ee0;
+            background: #171d2d;
+        }
+        .file-drop span {
+            font-size: 1.8rem;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .file-preview-box {
+            margin-top: 1rem;
+            display: none;
+            text-align: center;
+        }
+        .file-preview-box.active {
+            display: block;
+        }
+        .file-preview-box img {
+            max-width: 180px;
+            max-height: 180px;
+            border-radius: 20px;
+            border: 2px solid #3a4060;
+            box-shadow: 0 12px 25px #00000060;
+        }
+        .file-preview-box .file-name {
+            font-size: 0.8rem;
+            color: #a1a9cc;
+            margin-top: 6px;
+        }
+
+        /* fields */
+        .fields-panel {
+            background: #131724;
+            border-radius: 22px;
+            padding: 1.6rem 1.4rem;
+            border: 1px solid #2b3143;
+            margin: 0.5rem 0 0.8rem;
+        }
+        .field-item {
+            background: #1a1f30;
+            border-radius: 22px;
+            padding: 1.4rem;
+            margin-bottom: 1rem;
+            border: 1px solid #343c58;
+            transition: 0.15s;
+        }
+        .field-item:hover {
+            border-color: #5968c9;
+        }
+        .field-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .field-header h5 {
+            font-weight: 600;
+            color: #aab5ff;
+            letter-spacing: 0.01em;
+        }
+        .field-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .inline-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #0f1421;
+            padding: 0.7rem 1rem;
+            border-radius: 18px;
+            width: fit-content;
+        }
+        .inline-toggle input {
+            width: 20px;
+            height: 20px;
+            accent-color: #6e80fd;
+        }
+        .remove-btn {
+            background: rgba(255, 70, 90, 0.1);
+            border: 1px solid #572c3a;
+            color: #ffacb5;
+            padding: 0.5rem 1.2rem;
+            border-radius: 30px;
+            font-weight: 500;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.15s;
+            margin-top: 0.5rem;
+        }
+        .remove-btn:hover {
+            background: #a23344;
+            color: white;
+            border-color: #ff7a8b;
+        }
+
+        .btn-secondary {
+            background: #262d42;
+            border: 1px solid #3c4468;
+            color: #d0d8ff;
+            padding: 0.9rem 1.8rem;
+            border-radius: 38px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.15s;
+            width: 100%;
+            margin-top: 8px;
+        }
+        .btn-secondary:hover {
+            background: #2f3857;
+            border-color: #7482f0;
+            color: white;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #5466f0, #3f4fcf);
+            border: none;
+            color: white;
+            font-weight: 650;
+            padding: 1.1rem 1.8rem;
+            border-radius: 44px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 12px 28px #1d2b70b0;
+            width: 100%;
+            border: 1px solid #7a8bff;
+        }
+        .btn-primary:hover:not(:disabled) {
+            background: linear-gradient(135deg, #6272f7, #4b5de0);
+            transform: scale(1.01);
+            box-shadow: 0 18px 32px #27347e;
+        }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .status-badge {
+            margin-top: 1.8rem;
+            border-radius: 60px;
+            padding: 1rem 1.5rem;
+            font-weight: 500;
+            display: none;
+            background: #1b212f;
+            border: 1px solid;
+            backdrop-filter: blur(20px);
+        }
+        .status-badge.success {
+            display: flex;
+            background: #18232c;
+            border-color: #267544;
+            color: #b3f0c5;
+        }
+        .status-badge.error {
+            display: flex;
+            background: #291d24;
+            border-color: #ba4b5e;
+            color: #fbb5c1;
+        }
+
+        .webhook-validator {
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            padding: 0.7rem 1rem;
+            border-radius: 50px;
+            background: #191f2f;
+            display: inline-block;
+            border: 1px solid #2f3853;
+        }
+
+        hr {
+            border: 0.5px solid #2a3149;
+            margin: 1.5rem 0;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="glass-card">
+    <div class="hero">
+        <h1><span>⚡</span> Discord Webhook Studio</h1>
+        <p>Embed professional dengan upload gambar, warna custom, dan field dinamis</p>
+    </div>
+
+    <div class="content">
+        <form id="webhookForm" onsubmit="return false;">
+            <!-- webhook url + validasi -->
+            <div class="field">
+                <div class="field-label"><span>Webhook URL</span> <span class="badge">wajib</span></div>
+                <input type="url" id="webhookUrl" placeholder="https://discord.com/api/webhooks/..." value="" required>
+                <div id="webhookValidate" class="webhook-validator">⚡ Masukkan URL untuk validasi otomatis</div>
+            </div>
+
+            <!-- bot name optional -->
+            <div class="field">
+                <div class="field-label"><span>Nama bot (optional)</span></div>
+                <input type="text" id="botName" placeholder="Contoh: Announcement Bot">
+            </div>
+
+            <!-- title & description -->
+            <div class="field">
+                <div class="field-label"><span>Judul embed</span> <span class="badge">wajib</span></div>
+                <input type="text" id="embedTitle" placeholder="Penting: update server" required>
+            </div>
+            <div class="field">
+                <div class="field-label"><span>Deskripsi embed</span> <span class="badge">wajib</span></div>
+                <textarea id="embedDescription" placeholder="Deskripsi menarik ..." required></textarea>
+            </div>
+
+            <!-- custom color picker (tanpa popup native) -->
+            <div class="field">
+                <div class="field-label"><span>Warna embed</span></div>
+                <div class="color-row">
+                    <div class="custom-color-picker">
+                        <div id="colorPreview" class="color-preview" style="background-color: #5865F2;"></div>
+                        <input type="text" id="embedColorHex" class="color-hex-input" value="#5865F2" maxlength="7">
+                    </div>
+                    <input type="color" id="embedColorNative" value="#5865F2">
+                </div>
+            </div>
+
+            <!-- fields container -->
+            <div class="field">
+                <div class="field-label"><span>Fields embed</span></div>
+                <div class="fields-panel" id="fieldsContainer">
+                    <p style="color:#7f87aa; text-align:center;">Belum ada field. Tambahkan di bawah.</p>
+                </div>
+                <button type="button" class="btn-secondary" id="addFieldBtn">➕ Tambah field baru</button>
+            </div>
+
+            <!-- Thumbnail (kecil) dengan opsi upload / url -->
+            <div class="field">
+                <div class="field-label"><span>Thumbnail kecil (opsional)</span></div>
+                <div class="media-option" id="thumbnailMedia">
+                    <div class="media-option-header">
+                        <label><input type="radio" name="thumbSource" value="url" checked> 🔗 URL gambar</label>
+                        <label><input type="radio" name="thumbSource" value="file"> 🖼️ Upload file</label>
+                    </div>
+                    <div class="media-url-input url-zone active" id="thumbUrlZone">
+                        <input type="url" id="thumbnailUrl" placeholder="https://...gambar.png">
+                    </div>
+                    <div class="file-zone" id="thumbFileZone">
+                        <div class="file-drop" id="thumbDrop">
+                            <span>📁</span> Klik atau taruh gambar (max 2MB)
+                        </div>
+                        <input type="file" id="thumbnailFile" accept="image/*" style="display: none;">
+                        <div class="file-preview-box" id="thumbPreview">
+                            <img src="" alt="preview">
+                            <div class="file-name"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gambar besar (image) -->
+            <div class="field">
+                <div class="field-label"><span>Gambar besar (opsional)</span></div>
+                <div class="media-option" id="imageMedia">
+                    <div class="media-option-header">
+                        <label><input type="radio" name="imageSource" value="url" checked> 🔗 URL gambar</label>
+                        <label><input type="radio" name="imageSource" value="file"> 🖼️ Upload file</label>
+                    </div>
+                    <div class="media-url-input url-zone active" id="imageUrlZone">
+                        <input type="url" id="imageUrl" placeholder="https://...contoh.jpg">
+                    </div>
+                    <div class="file-zone" id="imageFileZone">
+                        <div class="file-drop" id="imageDrop">
+                            <span>🖼️</span> Klik atau taruh gambar besar
+                        </div>
+                        <input type="file" id="imageFile" accept="image/*" style="display: none;">
+                        <div class="file-preview-box" id="imagePreview">
+                            <img src="" alt="preview">
+                            <div class="file-name"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- footer text -->
+            <div class="field">
+                <div class="field-label"><span>Footer text (opsional)</span></div>
+                <input type="text" id="footerText" placeholder="#announcements">
+            </div>
+
+            <hr>
+            <button type="submit" class="btn-primary" id="submitBtn">🚀 Kirim embed ke Discord</button>
+            <div id="statusMessage" class="status-badge"></div>
+        </form>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // === CUSTOM COLOR PICKER (tanpa popup native, hanya preview interaktif) ===
+        const colorPreview = document.getElementById('colorPreview');
+        const colorHex = document.getElementById('embedColorHex');
+        const nativeColor = document.getElementById('embedColorNative');
+
+        function updateFromHex(hex) {
+            let val = hex.value.trim();
+            if (!val.startsWith('#')) val = '#' + val;
+            if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+                colorPreview.style.backgroundColor = val;
+                nativeColor.value = val;        // tetap sync untuk keperluan value
+            } else if (val === '#') {
+                // fallback
+            }
+        }
+        colorHex.addEventListener('input', function() { updateFromHex(this); });
+        colorPreview.addEventListener('click', function() {
+            // biar ga muncul native color picker, kita alihkan ke input hex
+            colorHex.focus();
+        });
+
+        // biar tetap bisa pakai native jika dipaksa, tapi kita gak nampilin picker
+        nativeColor.addEventListener('input', function(e) {
+            colorPreview.style.backgroundColor = e.target.value;
+            colorHex.value = e.target.value.toUpperCase();
+        });
+
+        // inisialisasi
+        colorPreview.style.backgroundColor = '#5865F2';
+
+        // === VALIDASI WEBHOOK ===
+        const webhookUrl = document.getElementById('webhookUrl');
+        const validateDiv = document.getElementById('webhookValidate');
+        async function validateWebhook() {
+            const url = webhookUrl.value;
+            if (!url) {
+                validateDiv.innerHTML = '⚡ Masukkan URL webhook';
+                validateDiv.style.color = '#a1a9cc';
+                return;
+            }
+            const pattern = /^https:\/\/discord\.com\/api\/webhooks\/\d+\/[\w-]+$/;
+            if (!pattern.test(url)) {
+                validateDiv.innerHTML = '❌ Format tidak valid';
+                validateDiv.style.color = '#f9acb5';
+                return;
+            }
+            try {
+                const resp = await fetch(url, { method: 'GET', cache: 'no-cache' });
+                if (resp.ok) {
+                    validateDiv.innerHTML = '✅ Webhook aktif';
+                    validateDiv.style.color = '#a5f0b5';
+                } else {
+                    validateDiv.innerHTML = '⚠️ Webhook tidak merespon (status ' + resp.status + ')';
+                    validateDiv.style.color = '#f3c583';
+                }
+            } catch (e) {
+                validateDiv.innerHTML = '❌ Gagal validasi (CORS atau network)';
+                validateDiv.style.color = '#f9acb5';
+            }
+        }
+        webhookUrl.addEventListener('input', validateWebhook);
+        validateWebhook();
+
+        // === FIELD LOGIC ===
+        let fieldId = 0;
+        const fieldsContainer = document.getElementById('fieldsContainer');
+        const addFieldBtn = document.getElementById('addFieldBtn');
+
+        function refreshFieldsPlaceholder() {
+            if (fieldsContainer.querySelectorAll('.field-item').length === 0) {
+                fieldsContainer.innerHTML = '<p style="color:#7f87aa; text-align:center;">Belum ada field. Tambahkan di bawah.</p>';
+            }
+        }
+
+        addFieldBtn.addEventListener('click', function() {
+            fieldId++;
+            const fieldItem = document.createElement('div');
+            fieldItem.className = 'field-item';
+            fieldItem.dataset.id = fieldId;
+            fieldItem.innerHTML = `
+                <div class="field-header">
+                    <h5>Field #${fieldId}</h5>
+                </div>
+                <div class="field-grid">
+                    <input type="text" class="field-name" placeholder="Nama field" required>
+                    <input type="text" class="field-value" placeholder="Isi field" required>
+                </div>
+                <div class="inline-toggle">
+                    <input type="checkbox" class="field-inline" id="inline-${fieldId}">
+                    <label for="inline-${fieldId}">Inline (satu baris)</label>
+                </div>
+                <button class="remove-btn" type="button">✕ Hapus field</button>
+            `;
+            // hapus placeholder jika ada
+            if (fieldsContainer.children.length === 1 && fieldsContainer.children[0].tagName === 'P') {
+                fieldsContainer.innerHTML = '';
+            }
+            fieldsContainer.appendChild(fieldItem);
+
+            fieldItem.querySelector('.remove-btn').addEventListener('click', function() {
+                fieldItem.remove();
+                refreshFieldsPlaceholder();
+            });
+        });
+
+        // === MEDIA UPLOAD / URL TOGGLE (Thumbnail) ===
+        const thumbRadios = document.querySelectorAll('input[name="thumbSource"]');
+        const thumbUrlZone = document.getElementById('thumbUrlZone');
+        const thumbFileZone = document.getElementById('thumbFileZone');
+        const thumbDrop = document.getElementById('thumbDrop');
+        const thumbFileInput = document.getElementById('thumbnailFile');
+        const thumbPreview = document.getElementById('thumbPreview');
+        const thumbImg = thumbPreview.querySelector('img');
+        const thumbFileName = thumbPreview.querySelector('.file-name');
+
+        function updateThumbMode() {
+            const selected = document.querySelector('input[name="thumbSource"]:checked').value;
+            if (selected === 'url') {
+                thumbUrlZone.classList.add('active');
+                thumbFileZone.classList.remove('active');
+            } else {
+                thumbUrlZone.classList.remove('active');
+                thumbFileZone.classList.add('active');
+            }
+        }
+        thumbRadios.forEach(r => r.addEventListener('change', updateThumbMode));
+        updateThumbMode();
+
+        // drag & drop / click
+        thumbDrop.addEventListener('click', () => thumbFileInput.click());
+        thumbFileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    thumbImg.src = ev.target.result;
+                    thumbFileName.innerText = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+                    thumbPreview.classList.add('active');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // === MEDIA UPLOAD / URL TOGGLE (Image besar) ===
+        const imageRadios = document.querySelectorAll('input[name="imageSource"]');
+        const imageUrlZone = document.getElementById('imageUrlZone');
+        const imageFileZone = document.getElementById('imageFileZone');
+        const imageDrop = document.getElementById('imageDrop');
+        const imageFileInput = document.getElementById('imageFile');
+        const imagePreview = document.getElementById('imagePreview');
+        const imageImg = imagePreview.querySelector('img');
+        const imageFileName = imagePreview.querySelector('.file-name');
+
+        function updateImageMode() {
+            const selected = document.querySelector('input[name="imageSource"]:checked').value;
+            if (selected === 'url') {
+                imageUrlZone.classList.add('active');
+                imageFileZone.classList.remove('active');
+            } else {
+                imageUrlZone.classList.remove('active');
+                imageFileZone.classList.add('active');
+            }
+        }
+        imageRadios.forEach(r => r.addEventListener('change', updateImageMode));
+        updateImageMode();
+
+        imageDrop.addEventListener('click', () => imageFileInput.click());
+        imageFileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    imageImg.src = ev.target.result;
+                    imageFileName.innerText = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+                    imagePreview.classList.add('active');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // === SUBMIT FORM (webhook) ===
+        const submitBtn = document.getElementById('submitBtn');
+        const statusMsg = document.getElementById('statusMessage');
+
+        document.getElementById('webhookForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const webhook = webhookUrl.value.trim();
+            if (!webhook) {
+                statusMsg.className = 'status-badge error';
+                statusMsg.textContent = '❌ Webhook URL wajib diisi.';
+                return;
+            }
+
+            // validasi embed wajib
+            const title = document.getElementById('embedTitle').value.trim();
+            const desc = document.getElementById('embedDescription').value.trim();
+            if (!title || !desc) {
+                statusMsg.className = 'status-badge error';
+                statusMsg.textContent = '❌ Judul dan deskripsi harus diisi.';
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = '⏳ Mengirim...';
+
+            // ambil warna dari hex
+            let colorHexVal = colorHex.value.trim();
+            if (!colorHexVal.startsWith('#')) colorHexVal = '#' + colorHexVal;
+            let colorDecimal = 5793266; // default #5865F2
+            if (/^#[0-9A-Fa-f]{6}$/.test(colorHexVal)) {
+                colorDecimal = parseInt(colorHexVal.substring(1), 16);
+            }
+
+            const embed = {
+                title,
+                description: desc,
+                color: colorDecimal,
+                fields: []
+            };
+
+            // Fields
+            document.querySelectorAll('.field-item').forEach(item => {
+                const name = item.querySelector('.field-name')?.value.trim();
+                const value = item.querySelector('.field-value')?.value.trim();
+                const inline = item.querySelector('.field-inline')?.checked || false;
+                if (name && value) {
+                    embed.fields.push({ name, value, inline });
+                }
+            });
+
+            // Thumbnail: prioritas file (jika diupload) atau url
+            const thumbSource = document.querySelector('input[name="thumbSource"]:checked')?.value;
+            if (thumbSource === 'file' && thumbFileInput.files[0]) {
+                // Kita perlu upload ke tempat? TAPI Discord webhook tidak menerima file langsung via JSON.
+                // Untuk embed, hanya bisa menerima URL gambar. Jadi kita konversi ke dataURI? tidak bisa, harus URL.
+                // Solusi: kita beri tahu bahwa file harus diupload dulu ke hosting. Untuk demo, fallback ke url jika ada.
+                // Agar tidak merusak UX, kita akan gunakan data:image tapi tidak akan tampil di Discord (hanya url).
+                // Jadi kita arahkan ke URL jika file tidak diupload ke hosting.
+                // TAPI dalam kode ini, karena kita tidak punya server, kita beri info ke user.
+                // Saya tambahkan notifikasi jika menggunakan file namun tidak ada url.
+                if (!document.getElementById('thumbnailUrl').value) {
+                    alert('⚠️ Discord webhook hanya menerima URL gambar. Upload file memerlukan hosting. Gunakan URL atau upload ke tempat lain.');
+                }
+                // fallback ke URL jika ada, jika tidak skip
+            }
+            // Ambil dari URL
+            if (document.getElementById('thumbnailUrl').value) {
+                embed.thumbnail = { url: document.getElementById('thumbnailUrl').value };
+            }
+
+            const imageSource = document.querySelector('input[name="imageSource"]:checked')?.value;
+            if (imageSource === 'file' && imageFileInput.files[0]) {
+                if (!document.getElementById('imageUrl').value) {
+                    alert('⚠️ Gambar besar membutuhkan URL (file tidak bisa langsung). Gunakan URL.');
+                }
+            }
+            if (document.getElementById('imageUrl').value) {
+                embed.image = { url: document.getElementById('imageUrl').value };
+            }
+
+            // footer
+            const footer = document.getElementById('footerText').value.trim();
+            if (footer) embed.footer = { text: footer };
+
+            // payload
+            const payload = { embeds: [embed] };
+            const botName = document.getElementById('botName').value.trim();
+            if (botName) payload.username = botName;
+
+            try {
+                const resp = await fetch(webhook, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (resp.ok || resp.status === 204) {
+                    statusMsg.className = 'status-badge success';
+                    statusMsg.textContent = '✅ Embed sukses dikirim!';
+
+                    // reset form? tidak mereset webhook url, karena itu penting
+                    // Kosongkan field-field (opsional)
+                    document.getElementById('embedTitle').value = '';
+                    document.getElementById('embedDescription').value = '';
+                    document.getElementById('botName').value = '';
+                    document.getElementById('footerText').value = '';
+                    document.getElementById('thumbnailUrl').value = '';
+                    document.getElementById('imageUrl').value = '';
+                    // reset fields
+                    fieldsContainer.innerHTML = '<p style="color:#7f87aa; text-align:center;">Belum ada field. Tambahkan di bawah.</p>';
+                    // hapus preview
+                    thumbPreview.classList.remove('active');
+                    imagePreview.classList.remove('active');
+                    thumbFileInput.value = '';
+                    imageFileInput.value = '';
+                    // reset warna
+                    colorHex.value = '#5865F2';
+                    colorPreview.style.backgroundColor = '#5865F2';
+                } else {
+                    const err = await resp.json();
+                    statusMsg.className = 'status-badge error';
+                    statusMsg.textContent = `❌ Gagal: ${err.message || 'unknown'}`;
+                }
+            } catch (err) {
+                statusMsg.className = 'status-badge error';
+                statusMsg.textContent = '❌ Network error / CORS';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = '🚀 Kirim embed ke Discord';
+            }
+        });
+    })();
+</script>
+</body>
+  </html>
