@@ -131,7 +131,7 @@
             font-weight: 400;
         }
 
-        /* custom color picker */
+        /* CUSTOM COLOR PICKER yang fully work: bisa tulis hex atau pilih dari palet */
         .color-row {
             display: flex;
             gap: 12px;
@@ -147,13 +147,13 @@
             width: fit-content;
         }
         .color-preview {
-            width: 42px;
-            height: 42px;
+            width: 46px;
+            height: 46px;
             border-radius: 40px;
             border: 2px solid #2d3348;
             cursor: pointer;
             transition: 0.2s;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
         }
         .color-preview:hover {
             transform: scale(1.06);
@@ -162,18 +162,19 @@
         .color-hex-input {
             background: transparent !important;
             border: none !important;
-            width: 120px;
+            width: 130px;
             padding: 0.2rem 0.8rem;
             font-size: 1rem;
             font-weight: 500;
-            color: #d6daf2;
+            color: #f0f2fa;
             box-shadow: none !important;
         }
         .color-hex-input:focus {
             background: #202433 !important;
             border-radius: 40px;
+            outline: none;
         }
-        /* hidden native color */
+        /* hidden native color untuk jadi backend picker */
         #embedColorNative {
             opacity: 0;
             position: absolute;
@@ -181,92 +182,21 @@
             height: 0;
             pointer-events: none;
         }
-
-        /* URL / file toggles */
-        .media-option {
-            background: #151821;
-            border-radius: 20px;
-            padding: 1rem 1.3rem;
-            margin-top: 0.6rem;
-            border: 1px solid #2d3245;
-        }
-        .media-option-header {
-            display: flex;
-            gap: 25px;
-            margin-bottom: 1rem;
-        }
-        .media-option-header label {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            color: #bac0da;
+        /* tombol palet dummy */
+        .palette-button {
+            background: #262e45;
+            border: 1.5px solid #404a70;
+            border-radius: 40px;
+            padding: 0.45rem 1.2rem;
             font-weight: 500;
+            color: #ccd4fc;
             cursor: pointer;
-        }
-        .media-option-header input[type="radio"] {
-            appearance: none;
-            width: 18px;
-            height: 18px;
-            border: 2px solid #495172;
-            border-radius: 50%;
-            margin: 0;
-            padding: 0;
-            background: #1b1f30;
             transition: 0.1s;
+            white-space: nowrap;
         }
-        .media-option-header input[type="radio"]:checked {
-            border: 5px solid #6b7cff;
-            background: #1e2338;
-        }
-        .media-url-input {
-            display: block;
-        }
-        .file-zone {
-            display: none;
-        }
-        .file-zone.active {
-            display: block;
-        }
-        .url-zone.active {
-            display: block;
-        }
-        .file-drop {
-            background: #121624;
-            border: 2px dashed #353d58;
-            border-radius: 22px;
-            padding: 1.5rem;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .file-drop:hover {
-            border-color: #6f7ee0;
-            background: #171d2d;
-        }
-        .file-drop span {
-            font-size: 1.8rem;
-            display: block;
-            margin-bottom: 5px;
-        }
-        .file-preview-box {
-            margin-top: 1rem;
-            display: none;
-            text-align: center;
-        }
-        .file-preview-box.active {
-            display: block;
-        }
-        .file-preview-box img {
-            max-width: 180px;
-            max-height: 180px;
-            border-radius: 20px;
-            border: 2px solid #3a4060;
-            box-shadow: 0 12px 25px #00000060;
-        }
-        .file-preview-box .file-name {
-            font-size: 0.8rem;
-            color: #a1a9cc;
-            margin-top: 6px;
+        .palette-button:hover {
+            background: #32405f;
+            border-color: #6c7cd9;
         }
 
         /* fields */
@@ -418,6 +348,13 @@
             border: 0.5px solid #2a3149;
             margin: 1.5rem 0;
         }
+        /* thumbnail hint */
+        .hint {
+            color: #7d85b0;
+            font-size: 0.8rem;
+            margin-top: 0.3rem;
+            padding-left: 0.3rem;
+        }
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -427,7 +364,7 @@
 <div class="glass-card">
     <div class="hero">
         <h1><span>⚡</span> Discord Webhook Studio</h1>
-        <p>Embed professional dengan upload gambar, warna custom, dan field dinamis</p>
+        <p>Embed dengan color picker custom & thumbnail via URL</p>
     </div>
 
     <div class="content">
@@ -455,16 +392,20 @@
                 <textarea id="embedDescription" placeholder="Deskripsi menarik ..." required></textarea>
             </div>
 
-            <!-- custom color picker (tanpa popup native) -->
+            <!-- CUSTOM COLOR PICKER dengan input manual dan akses ke palet -->
             <div class="field">
                 <div class="field-label"><span>Warna embed</span></div>
-                <div class="color-row">
+                <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+                    <!-- custom preview + hex -->
                     <div class="custom-color-picker">
                         <div id="colorPreview" class="color-preview" style="background-color: #5865F2;"></div>
-                        <input type="text" id="embedColorHex" class="color-hex-input" value="#5865F2" maxlength="7">
+                        <input type="text" id="embedColorHex" class="color-hex-input" value="#5865F2" maxlength="7" placeholder="#5865F2">
                     </div>
+                    <!-- tombol untuk memunculkan color picker native (dialog) -->
+                    <div class="palette-button" id="triggerNativePicker">🎨 Buka palet</div>
                     <input type="color" id="embedColorNative" value="#5865F2">
                 </div>
+                <div class="hint">Klik kotak warna untuk fokus input hex, atau tekan "Buka palet" untuk pilih dari dialog.</div>
             </div>
 
             <!-- fields container -->
@@ -476,52 +417,16 @@
                 <button type="button" class="btn-secondary" id="addFieldBtn">➕ Tambah field baru</button>
             </div>
 
-            <!-- Thumbnail (kecil) dengan opsi upload / url -->
+            <!-- Thumbnail via URL saja (sesuai permintaan) -->
             <div class="field">
-                <div class="field-label"><span>Thumbnail kecil (opsional)</span></div>
-                <div class="media-option" id="thumbnailMedia">
-                    <div class="media-option-header">
-                        <label><input type="radio" name="thumbSource" value="url" checked> 🔗 URL gambar</label>
-                        <label><input type="radio" name="thumbSource" value="file"> 🖼️ Upload file</label>
-                    </div>
-                    <div class="media-url-input url-zone active" id="thumbUrlZone">
-                        <input type="url" id="thumbnailUrl" placeholder="https://...gambar.png">
-                    </div>
-                    <div class="file-zone" id="thumbFileZone">
-                        <div class="file-drop" id="thumbDrop">
-                            <span>📁</span> Klik atau taruh gambar (max 2MB)
-                        </div>
-                        <input type="file" id="thumbnailFile" accept="image/*" style="display: none;">
-                        <div class="file-preview-box" id="thumbPreview">
-                            <img src="" alt="preview">
-                            <div class="file-name"></div>
-                        </div>
-                    </div>
-                </div>
+                <div class="field-label"><span>Thumbnail URL (opsional)</span></div>
+                <input type="url" id="thumbnailUrl" placeholder="https://...gambar.png">
             </div>
 
-            <!-- Gambar besar (image) -->
+            <!-- Gambar besar via URL -->
             <div class="field">
-                <div class="field-label"><span>Gambar besar (opsional)</span></div>
-                <div class="media-option" id="imageMedia">
-                    <div class="media-option-header">
-                        <label><input type="radio" name="imageSource" value="url" checked> 🔗 URL gambar</label>
-                        <label><input type="radio" name="imageSource" value="file"> 🖼️ Upload file</label>
-                    </div>
-                    <div class="media-url-input url-zone active" id="imageUrlZone">
-                        <input type="url" id="imageUrl" placeholder="https://...contoh.jpg">
-                    </div>
-                    <div class="file-zone" id="imageFileZone">
-                        <div class="file-drop" id="imageDrop">
-                            <span>🖼️</span> Klik atau taruh gambar besar
-                        </div>
-                        <input type="file" id="imageFile" accept="image/*" style="display: none;">
-                        <div class="file-preview-box" id="imagePreview">
-                            <img src="" alt="preview">
-                            <div class="file-name"></div>
-                        </div>
-                    </div>
-                </div>
+                <div class="field-label"><span>Gambar besar URL (opsional)</span></div>
+                <input type="url" id="imageUrl" placeholder="https://...contoh.jpg">
             </div>
 
             <!-- footer text -->
@@ -539,37 +444,57 @@
 
 <script>
     (function() {
-        // === CUSTOM COLOR PICKER (tanpa popup native, hanya preview interaktif) ===
+        // ========== CUSTOM COLOR PICKER dengan dua arah ==========
         const colorPreview = document.getElementById('colorPreview');
         const colorHex = document.getElementById('embedColorHex');
         const nativeColor = document.getElementById('embedColorNative');
+        const triggerNative = document.getElementById('triggerNativePicker');
 
-        function updateFromHex(hex) {
-            let val = hex.value.trim();
+        // fungsi update preview dari hex value
+        function updateFromHex(hexInput) {
+            let raw = hexInput.value.trim();
+            if (raw === '') return;
+            if (!raw.startsWith('#')) raw = '#' + raw;
+            // validasi hex 6 digit
+            if (/^#[0-9A-Fa-f]{6}$/.test(raw)) {
+                colorPreview.style.backgroundColor = raw;
+                nativeColor.value = raw;        // sync ke native
+            } else {
+                // fallback: jika tidak valid, pertahankan preview (tidak update)
+            }
+        }
+
+        // 1. Ketika user mengetik di field hex
+        colorHex.addEventListener('input', function() {
+            let val = this.value;
             if (!val.startsWith('#')) val = '#' + val;
             if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
                 colorPreview.style.backgroundColor = val;
-                nativeColor.value = val;        // tetap sync untuk keperluan value
-            } else if (val === '#') {
-                // fallback
+                nativeColor.value = val;
             }
-        }
-        colorHex.addEventListener('input', function() { updateFromHex(this); });
+        });
+
+        // 2. Klik preview fokus ke input hex (memudahkan edit manual)
         colorPreview.addEventListener('click', function() {
-            // biar ga muncul native color picker, kita alihkan ke input hex
             colorHex.focus();
         });
 
-        // biar tetap bisa pakai native jika dipaksa, tapi kita gak nampilin picker
-        nativeColor.addEventListener('input', function(e) {
-            colorPreview.style.backgroundColor = e.target.value;
-            colorHex.value = e.target.value.toUpperCase();
+        // 3. Tombol "Buka palet" memicu native color picker
+        triggerNative.addEventListener('click', function() {
+            nativeColor.click();  // membuka dialog color picker sistem
         });
 
-        // inisialisasi
+        // 4. Saat native color berubah (pilih dari dialog)
+        nativeColor.addEventListener('input', function(e) {
+            const newColor = e.target.value;  // format #rrggbb
+            colorPreview.style.backgroundColor = newColor;
+            colorHex.value = newColor.toUpperCase();
+        });
+
+        // inisialisasi preview
         colorPreview.style.backgroundColor = '#5865F2';
 
-        // === VALIDASI WEBHOOK ===
+        // ========== VALIDASI WEBHOOK ==========
         const webhookUrl = document.getElementById('webhookUrl');
         const validateDiv = document.getElementById('webhookValidate');
         async function validateWebhook() {
@@ -602,7 +527,7 @@
         webhookUrl.addEventListener('input', validateWebhook);
         validateWebhook();
 
-        // === FIELD LOGIC ===
+        // ========== FIELD LOGIC ==========
         let fieldId = 0;
         const fieldsContainer = document.getElementById('fieldsContainer');
         const addFieldBtn = document.getElementById('addFieldBtn');
@@ -644,82 +569,7 @@
             });
         });
 
-        // === MEDIA UPLOAD / URL TOGGLE (Thumbnail) ===
-        const thumbRadios = document.querySelectorAll('input[name="thumbSource"]');
-        const thumbUrlZone = document.getElementById('thumbUrlZone');
-        const thumbFileZone = document.getElementById('thumbFileZone');
-        const thumbDrop = document.getElementById('thumbDrop');
-        const thumbFileInput = document.getElementById('thumbnailFile');
-        const thumbPreview = document.getElementById('thumbPreview');
-        const thumbImg = thumbPreview.querySelector('img');
-        const thumbFileName = thumbPreview.querySelector('.file-name');
-
-        function updateThumbMode() {
-            const selected = document.querySelector('input[name="thumbSource"]:checked').value;
-            if (selected === 'url') {
-                thumbUrlZone.classList.add('active');
-                thumbFileZone.classList.remove('active');
-            } else {
-                thumbUrlZone.classList.remove('active');
-                thumbFileZone.classList.add('active');
-            }
-        }
-        thumbRadios.forEach(r => r.addEventListener('change', updateThumbMode));
-        updateThumbMode();
-
-        // drag & drop / click
-        thumbDrop.addEventListener('click', () => thumbFileInput.click());
-        thumbFileInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file && file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = function(ev) {
-                    thumbImg.src = ev.target.result;
-                    thumbFileName.innerText = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
-                    thumbPreview.classList.add('active');
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        // === MEDIA UPLOAD / URL TOGGLE (Image besar) ===
-        const imageRadios = document.querySelectorAll('input[name="imageSource"]');
-        const imageUrlZone = document.getElementById('imageUrlZone');
-        const imageFileZone = document.getElementById('imageFileZone');
-        const imageDrop = document.getElementById('imageDrop');
-        const imageFileInput = document.getElementById('imageFile');
-        const imagePreview = document.getElementById('imagePreview');
-        const imageImg = imagePreview.querySelector('img');
-        const imageFileName = imagePreview.querySelector('.file-name');
-
-        function updateImageMode() {
-            const selected = document.querySelector('input[name="imageSource"]:checked').value;
-            if (selected === 'url') {
-                imageUrlZone.classList.add('active');
-                imageFileZone.classList.remove('active');
-            } else {
-                imageUrlZone.classList.remove('active');
-                imageFileZone.classList.add('active');
-            }
-        }
-        imageRadios.forEach(r => r.addEventListener('change', updateImageMode));
-        updateImageMode();
-
-        imageDrop.addEventListener('click', () => imageFileInput.click());
-        imageFileInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file && file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = function(ev) {
-                    imageImg.src = ev.target.result;
-                    imageFileName.innerText = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
-                    imagePreview.classList.add('active');
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        // === SUBMIT FORM (webhook) ===
+        // ========== SUBMIT FORM ==========
         const submitBtn = document.getElementById('submitBtn');
         const statusMsg = document.getElementById('statusMessage');
 
@@ -733,7 +583,6 @@
                 return;
             }
 
-            // validasi embed wajib
             const title = document.getElementById('embedTitle').value.trim();
             const desc = document.getElementById('embedDescription').value.trim();
             if (!title || !desc) {
@@ -745,10 +594,10 @@
             submitBtn.disabled = true;
             submitBtn.innerText = '⏳ Mengirim...';
 
-            // ambil warna dari hex
+            // ambil warna dari hex (pastikan valid)
             let colorHexVal = colorHex.value.trim();
             if (!colorHexVal.startsWith('#')) colorHexVal = '#' + colorHexVal;
-            let colorDecimal = 5793266; // default #5865F2
+            let colorDecimal = 5793266; // #5865F2
             if (/^#[0-9A-Fa-f]{6}$/.test(colorHexVal)) {
                 colorDecimal = parseInt(colorHexVal.substring(1), 16);
             }
@@ -770,41 +619,22 @@
                 }
             });
 
-            // Thumbnail: prioritas file (jika diupload) atau url
-            const thumbSource = document.querySelector('input[name="thumbSource"]:checked')?.value;
-            if (thumbSource === 'file' && thumbFileInput.files[0]) {
-                // Kita perlu upload ke tempat? TAPI Discord webhook tidak menerima file langsung via JSON.
-                // Untuk embed, hanya bisa menerima URL gambar. Jadi kita konversi ke dataURI? tidak bisa, harus URL.
-                // Solusi: kita beri tahu bahwa file harus diupload dulu ke hosting. Untuk demo, fallback ke url jika ada.
-                // Agar tidak merusak UX, kita akan gunakan data:image tapi tidak akan tampil di Discord (hanya url).
-                // Jadi kita arahkan ke URL jika file tidak diupload ke hosting.
-                // TAPI dalam kode ini, karena kita tidak punya server, kita beri info ke user.
-                // Saya tambahkan notifikasi jika menggunakan file namun tidak ada url.
-                if (!document.getElementById('thumbnailUrl').value) {
-                    alert('⚠️ Discord webhook hanya menerima URL gambar. Upload file memerlukan hosting. Gunakan URL atau upload ke tempat lain.');
-                }
-                // fallback ke URL jika ada, jika tidak skip
-            }
-            // Ambil dari URL
-            if (document.getElementById('thumbnailUrl').value) {
-                embed.thumbnail = { url: document.getElementById('thumbnailUrl').value };
+            // Thumbnail URL
+            const thumbUrl = document.getElementById('thumbnailUrl').value.trim();
+            if (thumbUrl) {
+                embed.thumbnail = { url: thumbUrl };
             }
 
-            const imageSource = document.querySelector('input[name="imageSource"]:checked')?.value;
-            if (imageSource === 'file' && imageFileInput.files[0]) {
-                if (!document.getElementById('imageUrl').value) {
-                    alert('⚠️ Gambar besar membutuhkan URL (file tidak bisa langsung). Gunakan URL.');
-                }
-            }
-            if (document.getElementById('imageUrl').value) {
-                embed.image = { url: document.getElementById('imageUrl').value };
+            // Image URL
+            const imageUrl = document.getElementById('imageUrl').value.trim();
+            if (imageUrl) {
+                embed.image = { url: imageUrl };
             }
 
             // footer
             const footer = document.getElementById('footerText').value.trim();
             if (footer) embed.footer = { text: footer };
 
-            // payload
             const payload = { embeds: [embed] };
             const botName = document.getElementById('botName').value.trim();
             if (botName) payload.username = botName;
@@ -820,8 +650,7 @@
                     statusMsg.className = 'status-badge success';
                     statusMsg.textContent = '✅ Embed sukses dikirim!';
 
-                    // reset form? tidak mereset webhook url, karena itu penting
-                    // Kosongkan field-field (opsional)
+                    // Reset field kecuali webhook url (jangan direset)
                     document.getElementById('embedTitle').value = '';
                     document.getElementById('embedDescription').value = '';
                     document.getElementById('botName').value = '';
@@ -830,18 +659,19 @@
                     document.getElementById('imageUrl').value = '';
                     // reset fields
                     fieldsContainer.innerHTML = '<p style="color:#7f87aa; text-align:center;">Belum ada field. Tambahkan di bawah.</p>';
-                    // hapus preview
-                    thumbPreview.classList.remove('active');
-                    imagePreview.classList.remove('active');
-                    thumbFileInput.value = '';
-                    imageFileInput.value = '';
-                    // reset warna
+                    fieldId = 0;
+                    // reset warna ke default
                     colorHex.value = '#5865F2';
                     colorPreview.style.backgroundColor = '#5865F2';
+                    nativeColor.value = '#5865F2';
                 } else {
-                    const err = await resp.json();
+                    let errorMsg = 'Gagal mengirim';
+                    try {
+                        const err = await resp.json();
+                        errorMsg = err.message || JSON.stringify(err);
+                    } catch (jsonErr) {}
                     statusMsg.className = 'status-badge error';
-                    statusMsg.textContent = `❌ Gagal: ${err.message || 'unknown'}`;
+                    statusMsg.textContent = `❌ ${errorMsg}`;
                 }
             } catch (err) {
                 statusMsg.className = 'status-badge error';
@@ -854,4 +684,4 @@
     })();
 </script>
 </body>
-  </html>
+    </html>
